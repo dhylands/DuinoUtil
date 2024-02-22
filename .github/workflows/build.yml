@@ -1,0 +1,66 @@
+name: Unit Tests
+
+on: [push, pull_request]
+
+# Each job runs in different docker image, and the checkout is inside the
+# docker image, which practically means that everything has to be a single job.
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./DuinoUtil
+    steps:
+
+    # Checkout the repository
+
+    - name: Checkout DuinoUtil
+      uses: actions/checkout@v4
+      with:
+        path: DuinoUtil
+
+    - name: Checkout DuinoMakefile
+      uses: actions/checkout@v4
+      with:
+        repository: dhylands/DuinoMakefile
+        path: DuinoMakefile
+
+    # Do the unit tests
+
+    - name: Install googletest
+      run: sudo apt install libgtest-dev
+
+    - name: Run Unit Tests
+      run: make BOARD=pico unittest
+
+    # Check that the code is styled properly
+
+    - name: Test Code Formatting
+      run: make BOARD=pico test-style
+
+    # Run the linter
+
+    - name: Install cpplint
+      run: sudo apt install cpplint
+      working-directory: .
+
+    - name: Run Linter
+      run: make BOARD=pico lint
+
+    # Check that everything is documented
+
+    - name: Install doxygen
+      run: sudo apt install doxygen graphviz
+      working-directory: .
+
+    - name: Test that docs passes
+      run: make BOARD=pico docs
+
+    # Run coverage tests
+
+    - name: Install gcovr
+      run: pip install gcovr
+      working-directory: .
+
+    - name: Test Coverage
+      run: make BOARD=pico coverage V=1
