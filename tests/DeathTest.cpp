@@ -36,4 +36,3 @@ void __assert_fail(
 }
 
 }  // extern "C"
-
